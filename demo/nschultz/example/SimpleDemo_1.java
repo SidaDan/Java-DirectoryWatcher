@@ -34,7 +34,7 @@ public class SimpleDemo_1 implements DirectoryWatchable {
         System.out.println(changedFile.getChangeKind().name());
         // what file is the event referring to:
         System.out.println(changedFile.getAbsolutePath());
-        // whenAsString did it happen:
+        // when did it happen:
         System.out.println(changedFile.whenAsString());
         // you could also call the toString method to get all of the information above:
         System.out.println(changedFile.toString());
