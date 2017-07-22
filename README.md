@@ -1,6 +1,6 @@
 # Java-DirectoryWatcher
 
-A small library for watching directories for changes.
+A small library for watching directory changes.
 
 ## Simple Example
 
