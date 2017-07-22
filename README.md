@@ -9,7 +9,7 @@ A small library for watching directories for changes.
 class Example implements DirectoryWatchable {
 
   public static void main(String[] args){
-    DirectoryWatcher watcher = new DirectoryWatcher(Paths.get(C:/), new Example());
+    DirectoryWatcher watcher = new DirectoryWatcher(Paths.get("C:/"), new Example());
     watcher.startWatching();
   }
 
