@@ -27,3 +27,10 @@ class Example implements DirectoryWatchable {
 }
 
 ```
+
+## Lambda Example
+You can also use a lambda expression to write a neat one liner
+
+```java
+new DirectoryWatcher(dirToWatch, changedFile -> System.out.println(changedFile.toString())).startWatching();
+```
