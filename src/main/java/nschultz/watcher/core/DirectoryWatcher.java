@@ -13,7 +13,6 @@ DEALINGS IN THE SOFTWARE.
  */
 package nschultz.watcher.core;
 
-import com.sun.istack.internal.NotNull;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -56,7 +55,7 @@ public class DirectoryWatcher implements Runnable {
      *                     notified about changes on the specified directory
      * @throws IllegalArgumentException if the given path points to a file that is not a directory
      */
-    public DirectoryWatcher(@NotNull final Path dirToWatch, @NotNull  final DirectoryWatchable dirWatchable) {
+    public DirectoryWatcher(final Path dirToWatch, final DirectoryWatchable dirWatchable) {
         validateParameters(dirToWatch, dirWatchable);
 
         this.dirToWatch = dirToWatch;
@@ -133,7 +132,7 @@ public class DirectoryWatcher implements Runnable {
         return dirToWatch.resolve((Path) watchEvent.context());
     }
 
-    private void validateParameters(@NotNull Path dirToWatch, @NotNull DirectoryWatchable dirWatchable) {
+    private void validateParameters(Path dirToWatch, DirectoryWatchable dirWatchable) {
         Objects.requireNonNull(dirToWatch, "dirToWatch must not be null");
         Objects.requireNonNull(dirWatchable, "dirWatchable must not be null");
         if (!Files.isDirectory(dirToWatch)) {

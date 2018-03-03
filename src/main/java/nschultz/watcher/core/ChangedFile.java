@@ -13,8 +13,6 @@ DEALINGS IN THE SOFTWARE.
  */
 package nschultz.watcher.core;
 
-import com.sun.istack.internal.NotNull;
-
 import java.nio.file.Path;
 import java.nio.file.WatchEvent;
 import java.text.SimpleDateFormat;
@@ -53,7 +51,7 @@ public class ChangedFile {
      * @param changeKind the change kind which gives info about what kind of change
      *                   happened to the file
      */
-    ChangedFile(@NotNull final Path path, @NotNull final WatchEvent.Kind changeKind) {
+    ChangedFile(final Path path, final WatchEvent.Kind changeKind) {
         Objects.requireNonNull(path, "path must not be null");
         Objects.requireNonNull(changeKind, "changeKind must not be null");
 
