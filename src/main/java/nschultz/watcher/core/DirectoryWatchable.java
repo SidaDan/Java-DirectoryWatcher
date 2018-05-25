@@ -50,7 +50,7 @@ public interface DirectoryWatchable {
      * the set error stream.
      *
      * @param ex an instance of the {@code {@link IOException}} that occurred
-     *           while trying to watch the director for changes
+     *           while trying to watch the directory for changes
      */
     default void failed(IOException ex) {
         ex.printStackTrace(System.err);

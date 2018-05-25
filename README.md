@@ -20,7 +20,7 @@ class Example implements DirectoryWatchable {
         // what file is the event referring to:
         System.out.println(changedFile.getAbsolutePath());
         // when did it happen:
-        System.out.println(changedFile.whenAsString());
+        System.out.println(changedFile.getChangeTime());
         // you could also call the toString method to get all of the information above:
         System.out.println(changedFile.toString());
   }

@@ -60,7 +60,7 @@ public class ChangedFile {
      *
      * @return the time of change
      */
-    public final Date when() {
+    public final Date getChangeTime() {
         return changeTime;
     }
 
@@ -70,8 +70,8 @@ public class ChangedFile {
      *
      * @return the time when this file was changed
      */
-    public final String whenAsString() {
-        return whenAsString("yyyy-MM-dd HH:mm:ss");
+    public final String getChangeTimeFormatted() {
+        return getChangeTimeFormatted("yyyy-MM-dd HH:mm:ss");
     }
 
     /**
@@ -80,7 +80,7 @@ public class ChangedFile {
      * @param format the way the time will be formatted before it gets returned
      * @return the time when this file was changed
      */
-    public final String whenAsString(final String format) {
+    public final String getChangeTimeFormatted(final String format) {
         return new SimpleDateFormat(format).format(changeTime);
     }
 
