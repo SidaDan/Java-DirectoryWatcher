@@ -19,9 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Objects;
 
-import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
-import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
-import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
+import static java.nio.file.StandardWatchEventKinds.*;
 
 /**
  * The {@code {@link ChangedFile}} class represents a file that has been changed in a directory which is being watched
@@ -52,12 +50,9 @@ public class ChangedFile {
      *                   happened to the file
      */
     ChangedFile(final Path path, final WatchEvent.Kind changeKind) {
-        Objects.requireNonNull(path, "path must not be null");
-        Objects.requireNonNull(changeKind, "changeKind must not be null");
-
         this.changeTime = new Date(System.currentTimeMillis());
-        this.path = path;
-        this.changeKind = changeKind;
+        this.path = Objects.requireNonNull(path, "path must not be null");
+        this.changeKind = Objects.requireNonNull(changeKind, "changeKind must not be null");
     }
 
     /**
