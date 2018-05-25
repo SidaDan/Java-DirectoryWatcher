@@ -19,13 +19,13 @@ import java.nio.file.*;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import static java.nio.file.StandardWatchEventKinds.*;
 
 /**
  * The {@code {@link DirectoryWatcher}} is used to watch a directory for changes. These
  * changes could either be that a file has been created, deleted or modified.
+ * Note that unlike the WatchService class, the modified event will only get triggered once.
  * <br/>
  * To use this class simply create an instance of it, specify the directory that you wish to
  * watch and pass a {@code {@link DirectoryWatchable}} instance you wish to notify about those changes.
@@ -47,6 +47,10 @@ public class DirectoryWatcher implements Runnable {
     private ExecutorService dirWatcherThread;
     private volatile boolean isWatching = false;
 
+    // since the ENTRY_MODIFY event occurs two time (one time for content change, and second for timestamp change)
+    // this flag is added to prevent the DirectoryWatchable callback to be invoked twice.
+    private boolean modifyOccurrence = false;
+
     /**
      * Creates a new instance of {@code {@link DirectoryWatcher}}.
      *
@@ -56,10 +60,11 @@ public class DirectoryWatcher implements Runnable {
      * @throws IllegalArgumentException if the given path points to a file that is not a directory
      */
     public DirectoryWatcher(final Path dirToWatch, final DirectoryWatchable dirWatchable) {
-        validateParameters(dirToWatch, dirWatchable);
-
-        this.dirToWatch = dirToWatch;
-        this.dirWatchable = dirWatchable;
+        this.dirToWatch = Objects.requireNonNull(dirToWatch, "dirToWatch must not be null");
+        this.dirWatchable = Objects.requireNonNull(dirWatchable, "dirWatchable must not be null");
+        if (!Files.isDirectory(dirToWatch)) {
+            throw new IllegalArgumentException("dirToWatch must be a directory");
+        }
     }
 
     /**
@@ -101,9 +106,6 @@ public class DirectoryWatcher implements Runnable {
                     return;
                 }
 
-                // use sleep to avoid multiple occurrences of ENTRY_MODIFY events coming through
-                TimeUnit.MILLISECONDS.sleep(32);
-
                 pollEvents(watchKey);
             }
         } catch (IOException ex) {
@@ -115,9 +117,15 @@ public class DirectoryWatcher implements Runnable {
 
     private void pollEvents(final WatchKey watchKey) {
         for (final WatchEvent watchEvent : watchKey.pollEvents()) {
+            if (modifyOccurrence) {
+                continue;
+            }
+
             final WatchEvent.Kind kind = watchEvent.kind();
             if (kind == OVERFLOW) {
                 continue;
+            } else if (kind == ENTRY_MODIFY) {
+                modifyOccurrence = true;
             }
 
             dirWatchable.changeDetected(new ChangedFile(constructChangedFilePath(watchEvent), kind));
@@ -126,17 +134,10 @@ public class DirectoryWatcher implements Runnable {
                 break;
             }
         }
+        modifyOccurrence = false;
     }
 
     private Path constructChangedFilePath(WatchEvent watchEvent) {
         return dirToWatch.resolve((Path) watchEvent.context());
-    }
-
-    private void validateParameters(Path dirToWatch, DirectoryWatchable dirWatchable) {
-        Objects.requireNonNull(dirToWatch, "dirToWatch must not be null");
-        Objects.requireNonNull(dirWatchable, "dirWatchable must not be null");
-        if (!Files.isDirectory(dirToWatch)) {
-            throw new IllegalArgumentException("dirToWatch must be a directory");
-        }
     }
 }
