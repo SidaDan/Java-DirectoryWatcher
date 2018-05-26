@@ -25,7 +25,6 @@ import static java.nio.file.StandardWatchEventKinds.*;
 /**
  * The {@code {@link DirectoryWatcher}} is used to watch a directory for changes. These
  * changes could either be that a file has been created, deleted or modified.
- * Note that unlike the WatchService class, the modified event will only get triggered once.
  * <br/>
  * To use this class simply create an instance of it, specify the directory that you wish to
  * watch and pass a {@code {@link DirectoryWatchable}} instance you wish to notify about those changes.
@@ -116,7 +115,7 @@ public class DirectoryWatcher implements Runnable {
             if (kind == OVERFLOW) {
                 continue;
             }
-            
+
             dirWatchable.changeDetected(new ChangedFile(constructChangedFilePath(watchEvent), kind));
 
             if (!watchKey.reset()) {
