@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017 Niklas Schultz
+Copyright (c) 2018 Niklas Schultz
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
 rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
@@ -14,11 +14,14 @@ DEALINGS IN THE SOFTWARE.
 package nschultz.watcher.core;
 
 
+import nschultz.watcher.filters.AcceptEverythingPredicate;
+
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Predicate;
 
 import static java.nio.file.StandardWatchEventKinds.*;
 
@@ -43,6 +46,7 @@ public class DirectoryWatcher implements Runnable {
 
     private final Path dirToWatch;
     private final DirectoryWatchable dirWatchable;
+    private Predicate<ChangedFile> filter = new AcceptEverythingPredicate();
     private ExecutorService dirWatcherThread;
     private volatile boolean isWatching = false;
 
@@ -90,6 +94,18 @@ public class DirectoryWatcher implements Runnable {
         }
     }
 
+    /**
+     * Sets the filter for this {@code DirectoryWatcher} instance. The filter determines which files are getting
+     * reported when a change occurs. The default filter is set to
+     * {@code {@link AcceptEverythingPredicate }} which means all files are getting reported.
+     *
+     * @param filter the filter
+     * @throws NullPointerException if given Predicate is equal to <code>null</code>
+     */
+    public void setFilter(Predicate<ChangedFile> filter) {
+        this.filter = Objects.requireNonNull(filter);
+    }
+
     @Override
     public void run() {
         try (final WatchService watchService = dirToWatch.getFileSystem().newWatchService()) {
@@ -116,7 +132,10 @@ public class DirectoryWatcher implements Runnable {
                 continue;
             }
 
-            dirWatchable.changeDetected(new ChangedFile(constructChangedFilePath(watchEvent), kind));
+            final ChangedFile changedFile = new ChangedFile(constructChangedFilePath(watchEvent), kind);
+            if (filter.test(changedFile)) {
+                dirWatchable.changeDetected(changedFile);
+            }
 
             if (!watchKey.reset()) {
                 break;
