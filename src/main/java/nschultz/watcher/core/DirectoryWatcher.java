@@ -47,10 +47,6 @@ public class DirectoryWatcher implements Runnable {
     private ExecutorService dirWatcherThread;
     private volatile boolean isWatching = false;
 
-    // since the ENTRY_MODIFY event occurs two time (one time for content change, and second for timestamp change)
-    // this flag is added to prevent the DirectoryWatchable callback to be invoked twice.
-    private boolean modifyOccurrence = false;
-
     /**
      * Creates a new instance of {@code {@link DirectoryWatcher}}.
      *
@@ -105,36 +101,28 @@ public class DirectoryWatcher implements Runnable {
                 if (!isWatching) {
                     return;
                 }
-
                 pollEvents(watchKey);
             }
         } catch (IOException ex) {
             dirWatchable.failed(ex);
         } catch (InterruptedException ignore) {
-            Thread.currentThread().interrupt(); // keep state
+            Thread.currentThread().interrupt();
         }
     }
 
     private void pollEvents(final WatchKey watchKey) {
         for (final WatchEvent watchEvent : watchKey.pollEvents()) {
-            if (modifyOccurrence) {
-                continue;
-            }
-
             final WatchEvent.Kind kind = watchEvent.kind();
             if (kind == OVERFLOW) {
                 continue;
-            } else if (kind == ENTRY_MODIFY) {
-                modifyOccurrence = true;
             }
-
+            
             dirWatchable.changeDetected(new ChangedFile(constructChangedFilePath(watchEvent), kind));
 
             if (!watchKey.reset()) {
                 break;
             }
         }
-        modifyOccurrence = false;
     }
 
     private Path constructChangedFilePath(WatchEvent watchEvent) {
