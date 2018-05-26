@@ -15,8 +15,8 @@ package nschultz.watcher.core;
 
 import java.nio.file.Path;
 import java.nio.file.WatchEvent;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 import static java.nio.file.StandardWatchEventKinds.*;
@@ -38,7 +38,7 @@ import static java.nio.file.StandardWatchEventKinds.*;
  */
 public class ChangedFile {
 
-    private final Date changeTime;
+    private final LocalDateTime changeTime;
     private final Path path;
     private final WatchEvent.Kind changeKind;
 
@@ -50,7 +50,7 @@ public class ChangedFile {
      *                   happened to the file
      */
     ChangedFile(final Path path, final WatchEvent.Kind changeKind) {
-        this.changeTime = new Date(System.currentTimeMillis());
+        this.changeTime = LocalDateTime.now();
         this.path = Objects.requireNonNull(path, "path must not be null");
         this.changeKind = Objects.requireNonNull(changeKind, "changeKind must not be null");
     }
@@ -60,7 +60,7 @@ public class ChangedFile {
      *
      * @return the time of change
      */
-    public final Date getChangeTime() {
+    public final LocalDateTime getChangeTime() {
         return changeTime;
     }
 
@@ -81,7 +81,7 @@ public class ChangedFile {
      * @return the time when this file was changed
      */
     public final String getChangeTimeFormatted(final String format) {
-        return new SimpleDateFormat(format).format(changeTime);
+        return changeTime.format(DateTimeFormatter.ofPattern(format));
     }
 
     /**
