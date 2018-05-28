@@ -16,14 +16,14 @@ package nschultz.watcher.core;
 import java.io.IOException;
 
 /**
- * The {@code {@link DirectoryWatchable}} interface should be implemented by any class which wishes to
+ * The {@code {@link WatchEventCallback }} interface should be implemented by any class which wishes to
  * be notified when a directory change occurs.
  * <br/>
- * This interface has two methods. The {@code abstract changeDetected} method and the method
+ * This interface has two methods. The {@code abstract onChangeDetected} method and the method
  * {@code failed} with a default implementation. The default implementation of the {@code failed} method will
  * simply print the stacktrace of the caught {@code {@link IOException}}.
  * <br/>
- * The {@code {@link DirectoryWatchable}} interface should be used together with the {@code {@link DirectoryWatcher}}
+ * The {@code {@link WatchEventCallback }} interface should be used together with the {@code {@link DirectoryWatcher}}
  * class.
  * <br/>
  * Since this interface is a <i>FunctionalInterface</i> it can also be used with the <i>lambda</i> syntax.
@@ -33,14 +33,14 @@ import java.io.IOException;
  * @since 0.1.0
  */
 @FunctionalInterface
-public interface DirectoryWatchable {
+public interface WatchEventCallback {
 
     /**
      * Gets invoked when a change in the directory specified in the {@code {@link DirectoryWatcher}} class was detected.
      *
      * @param changedFile the file that has been changed
      */
-    void changeDetected(ChangedFile changedFile);
+    void onChangeDetected(ChangedFile changedFile);
 
     /**
      * Gets called in case an internal exception occurred. This could be because the {@code {@link DirectoryWatcher}}

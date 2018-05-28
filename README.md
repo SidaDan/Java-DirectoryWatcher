@@ -6,7 +6,7 @@ A small library for watching directory changes.
 
 ```java
 
-class Example implements DirectoryWatchable {
+class Example implements WatchEventCallback {
 
   public static void main(String[] args){
     DirectoryWatcher watcher = new DirectoryWatcher(Paths.get("C:/"), new Example());
@@ -14,7 +14,7 @@ class Example implements DirectoryWatchable {
   }
 
   @Override
-  public void changeDetected(ChangedFile changedFile){
+  public void onChangeDetected(ChangedFile changedFile){
          // what kind of event occurred:
         System.out.println(changedFile.getChangeKind().name());
         // what file is the event referring to:

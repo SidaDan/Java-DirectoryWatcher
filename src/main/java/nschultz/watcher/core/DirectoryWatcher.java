@@ -30,7 +30,7 @@ import static java.nio.file.StandardWatchEventKinds.*;
  * changes could either be that a file has been created, deleted or modified.
  * <br/>
  * To use this class simply create an instance of it, specify the directory that you wish to
- * watch and pass a {@code {@link DirectoryWatchable}} instance you wish to notify about those changes.
+ * watch and pass a {@code {@link WatchEventCallback }} instance you wish to notify about those changes.
  * After the initializing of this class you can use the {@code startWatching} method to start and the
  * {@code stopWatching} method to stop the {@code {@link DirectoryWatcher}} again. If the {@code stopWatching}
  * method is not invoked the {@code {@link DirectoryWatcher}} will keep watching the specified directory.
@@ -45,7 +45,7 @@ import static java.nio.file.StandardWatchEventKinds.*;
 public class DirectoryWatcher implements Runnable {
 
     private final Path dirToWatch;
-    private final DirectoryWatchable dirWatchable;
+    private final WatchEventCallback callback;
     private Predicate<ChangedFile> filter = new AcceptEverythingPredicate();
     private ExecutorService dirWatcherThread;
     private volatile boolean isWatching = false;
@@ -53,14 +53,14 @@ public class DirectoryWatcher implements Runnable {
     /**
      * Creates a new instance of {@code {@link DirectoryWatcher}}.
      *
-     * @param dirToWatch   the directory that will be watched for changes
-     * @param dirWatchable the DirectoryWatchable instance that want't to get
-     *                     notified about changes on the specified directory
+     * @param dirToWatch the directory that will be watched for changes
+     * @param callback   the WatchEventCallback instance that wants to get
+     *                   notified about changes on the specified directory
      * @throws IllegalArgumentException if the given path points to a file that is not a directory
      */
-    public DirectoryWatcher(final Path dirToWatch, final DirectoryWatchable dirWatchable) {
+    public DirectoryWatcher(final Path dirToWatch, final WatchEventCallback callback) {
         this.dirToWatch = Objects.requireNonNull(dirToWatch, "dirToWatch must not be null");
-        this.dirWatchable = Objects.requireNonNull(dirWatchable, "dirWatchable must not be null");
+        this.callback = Objects.requireNonNull(callback, "callback must not be null");
         if (!Files.isDirectory(dirToWatch)) {
             throw new IllegalArgumentException("dirToWatch must be a directory");
         }
@@ -119,7 +119,7 @@ public class DirectoryWatcher implements Runnable {
                 pollEvents(watchKey);
             }
         } catch (IOException ex) {
-            dirWatchable.failed(ex);
+            callback.failed(ex);
         } catch (InterruptedException ignore) {
             Thread.currentThread().interrupt();
         }
@@ -134,7 +134,7 @@ public class DirectoryWatcher implements Runnable {
 
             final ChangedFile changedFile = new ChangedFile(constructChangedFilePath(watchEvent), kind);
             if (filter.test(changedFile)) {
-                dirWatchable.changeDetected(changedFile);
+                callback.onChangeDetected(changedFile);
             }
 
             if (!watchKey.reset()) {
