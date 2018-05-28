@@ -34,9 +34,6 @@ import static java.nio.file.StandardWatchEventKinds.*;
  * After the initializing of this class you can use the {@code startWatching} method to start and the
  * {@code stopWatching} method to stop the {@code {@link DirectoryWatcher}} again. If the {@code stopWatching}
  * method is not invoked the {@code {@link DirectoryWatcher}} will keep watching the specified directory.
- * <br/>
- * Note that this watcher does not look inside directories in the specified folder for changes. That means only the root
- * directory will get watched for changes.
  *
  * @author Niklas Schultz
  * @version 0.1.0
@@ -46,12 +43,15 @@ public class DirectoryWatcher implements Runnable {
 
     private final Path dirToWatch;
     private final WatchEventCallback callback;
+    private final WatchOptions watchOption;
+
     private Predicate<ChangedFile> filter = new AcceptEverythingPredicate();
     private ExecutorService dirWatcherThread;
     private volatile boolean isWatching = false;
 
     /**
-     * Creates a new instance of {@code {@link DirectoryWatcher}}.
+     * Creates a new instance of {@code {@link DirectoryWatcher}}. This {@code DirectoryWatcher} will only watch
+     * the specified root directory for changes. That <b>does not</b> include any potential sub directories.
      *
      * @param dirToWatch the directory that will be watched for changes
      * @param callback   the WatchEventCallback instance that wants to get
@@ -59,8 +59,23 @@ public class DirectoryWatcher implements Runnable {
      * @throws IllegalArgumentException if the given path points to a file that is not a directory
      */
     public DirectoryWatcher(final Path dirToWatch, final WatchEventCallback callback) {
+        this(dirToWatch, callback, WatchOptions.ROOT_ONLY);
+    }
+
+    /**
+     * Creates a new instance of {@code {@link DirectoryWatcher}}.
+     *
+     * @param dirToWatch  the directory that will be watched for changes
+     * @param callback    the WatchEventCallback instance that wants to get
+     *                    notified about changes on the specified directory
+     * @param watchOption the watch option used for this {@code DirectoryWatcher}
+     * @throws IllegalArgumentException if the given path points to a file that is not a directory
+     */
+    public DirectoryWatcher(final Path dirToWatch, final WatchEventCallback callback, WatchOptions watchOption) {
         this.dirToWatch = Objects.requireNonNull(dirToWatch, "dirToWatch must not be null");
         this.callback = Objects.requireNonNull(callback, "callback must not be null");
+        this.watchOption = Objects.requireNonNull(watchOption, "watchOption must not be null");
+
         if (!Files.isDirectory(dirToWatch)) {
             throw new IllegalArgumentException("dirToWatch must be a directory");
         }
@@ -109,7 +124,7 @@ public class DirectoryWatcher implements Runnable {
     @Override
     public void run() {
         try (final WatchService watchService = dirToWatch.getFileSystem().newWatchService()) {
-            dirToWatch.register(watchService, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
+            registerWatchService(watchService);
 
             while (isWatching) {
                 final WatchKey watchKey = watchService.take();
@@ -119,9 +134,29 @@ public class DirectoryWatcher implements Runnable {
                 pollEvents(watchKey);
             }
         } catch (IOException ex) {
-            callback.failed(ex);
+            callback.onFailed(ex);
         } catch (InterruptedException ignore) {
             Thread.currentThread().interrupt();
+        }
+    }
+
+    private void registerWatchService(WatchService watchService) throws IOException {
+        dirToWatch.register(watchService, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
+
+        if (watchOption == WatchOptions.INCLUDE_SUB_DIRS) {
+            Files.walkFileTree(dirToWatch, new SimpleFileVisitor<>() {
+                @Override
+                public FileVisitResult postVisitDirectory(Path subDir, IOException ex) throws IOException {
+                    subDir.register(watchService, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult visitFileFailed(Path file, IOException ex) throws IOException {
+                    callback.onFailed(ex);
+                    return FileVisitResult.CONTINUE;
+                }
+            });
         }
     }
 

@@ -20,7 +20,7 @@ import java.io.IOException;
  * be notified when a directory change occurs.
  * <br/>
  * This interface has two methods. The {@code abstract onChangeDetected} method and the method
- * {@code failed} with a default implementation. The default implementation of the {@code failed} method will
+ * {@code onFailed} with a default implementation. The default implementation of the {@code onFailed} method will
  * simply print the stacktrace of the caught {@code {@link IOException}}.
  * <br/>
  * The {@code {@link WatchEventCallback }} interface should be used together with the {@code {@link DirectoryWatcher}}
@@ -52,7 +52,7 @@ public interface WatchEventCallback {
      * @param ex an instance of the {@code {@link IOException}} that occurred
      *           while trying to watch the directory for changes
      */
-    default void failed(IOException ex) {
+    default void onFailed(IOException ex) {
         ex.printStackTrace(System.err);
     }
 }
