@@ -1,6 +1,6 @@
 # Java-DirectoryWatcher
 
-A small library for watching directory changes.
+A small library for watching directory changes. It uses the WatchService API from Oracle.
 
 ## Simple Example
 
@@ -9,14 +9,14 @@ A small library for watching directory changes.
 class Example implements WatchEventCallback {
 
   public static void main(String[] args){
-    DirectoryWatcher watcher = new DirectoryWatcher(Paths.get("C:/"), new Example());
+    DirectoryWatcher watcher = new DirectoryWatcher(Paths.get("C:/"), new Example(), WatchOptions.INCLUDE_SUB_DIRS);
     watcher.startWatching();
   }
 
   @Override
   public void onChangeDetected(ChangedFile changedFile){
          // what kind of event occurred:
-        System.out.println(changedFile.getChangeKind().name());
+        System.out.println(changedFile.getChangeKind());
         // what file is the event referring to:
         System.out.println(changedFile.getAbsolutePath());
         // when did it happen:
