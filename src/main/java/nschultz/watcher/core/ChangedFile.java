@@ -28,9 +28,9 @@ import static java.nio.file.StandardWatchEventKinds.*;
  * Note that since this class contains a package private constructor it can not be initialized from outside the library.
  * This is because only the {@code {@link DirectoryWatcher}} should be able to create such an instance.
  * <br/>
- * <b>Also note that the {@code whenAsString} methods will NOT return a result that could be considered hundred percent
+ * <b>Also note that the {@code getChangeTime} methods will NOT return a result that could be considered hundred percent
  * accurate. There very might well be some amount of delay between the occurrences of the change event and the result
- * of the {@code whenAsString} methods.</b>
+ * of the {@code getChangeTime} methods.</b>
  *
  * @author Niklas Schultz
  * @version 0.1.0

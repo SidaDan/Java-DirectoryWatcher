@@ -45,7 +45,7 @@ public interface DirectoryWatchable {
     /**
      * Gets called in case an internal exception occurred. This could be because the {@code {@link DirectoryWatcher}}
      * did not have access rights to the specified directory.
-     * <br/>
+     * </br
      * This method has a default implementation which will simply print a stacktrace of the exception instance to
      * the set error stream.
      *
